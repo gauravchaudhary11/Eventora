@@ -1,0 +1,445 @@
+:root {
+    --bg: #f5efe5;
+    --panel: rgba(255, 251, 244, 0.82);
+    --panel-strong: #fff8ef;
+    --text: #20160f;
+    --muted: #6c5a4d;
+    --border: rgba(83, 51, 26, 0.12);
+    --accent: #0a7b78;
+    --accent-strong: #095755;
+    --accent-soft: rgba(10, 123, 120, 0.12);
+    --danger: #b44332;
+    --shadow: 0 24px 60px rgba(68, 42, 24, 0.12);
+    --radius: 8px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Outfit", sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(circle at top left, rgba(255, 160, 122, 0.24), transparent 28%),
+        radial-gradient(circle at top right, rgba(10, 123, 120, 0.16), transparent 24%),
+        linear-gradient(180deg, #f7f2ea 0%, #efe5d8 100%);
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+}
+
+button,
+input,
+textarea {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+button {
+    cursor: pointer;
+    transition: transform 160ms ease, opacity 160ms ease, background-color 160ms ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+}
+
+img {
+    display: block;
+    width: 100%;
+}
+
+.app-shell {
+    width: min(1220px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 24px 0 48px;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.8fr);
+    gap: 24px;
+    align-items: stretch;
+    padding: 28px;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(255, 248, 239, 0.94), rgba(244, 233, 220, 0.94));
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    position: relative;
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.28) 46%, transparent 62%),
+        linear-gradient(45deg, rgba(10, 123, 120, 0.06), transparent 34%);
+    pointer-events: none;
+}
+
+.hero-copy,
+.hero-panel {
+    position: relative;
+    z-index: 1;
+}
+
+.eyebrow {
+    margin: 0 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.hero h1,
+.section-heading h2 {
+    margin: 0;
+    font-family: "Space Grotesk", sans-serif;
+    line-height: 1;
+}
+
+.hero h1 {
+    font-size: clamp(3rem, 8vw, 5.2rem);
+}
+
+.hero-text {
+    max-width: 54ch;
+    margin: 16px 0 0;
+    color: var(--muted);
+    font-size: 1.04rem;
+    line-height: 1.6;
+}
+
+.hero-actions,
+.api-row,
+.filters,
+.form-actions,
+.event-actions,
+.booking-actions,
+.admin-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.hero-actions {
+    margin-top: 22px;
+}
+
+.hero-panel {
+    display: grid;
+    gap: 12px;
+}
+
+.mini-stat,
+.panel,
+.auth-card,
+.session-card,
+.list-item {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    backdrop-filter: blur(10px);
+}
+
+.mini-stat {
+    padding: 18px;
+}
+
+.mini-stat span {
+    display: block;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.mini-stat strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 1.05rem;
+}
+
+.layout {
+    display: grid;
+    gap: 18px;
+    margin-top: 18px;
+}
+
+.panel {
+    padding: 22px;
+    box-shadow: var(--shadow);
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.controls-panel {
+    display: grid;
+    gap: 20px;
+}
+
+.auth-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.auth-card,
+.session-card {
+    padding: 18px;
+}
+
+.auth-card {
+    display: grid;
+    gap: 12px;
+}
+
+.auth-card h3,
+.session-card h3,
+.list-item h3 {
+    margin: 0;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 1.05rem;
+}
+
+.session-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.api-config label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+input,
+textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.82);
+    color: var(--text);
+}
+
+textarea {
+    min-height: 112px;
+    resize: vertical;
+}
+
+.primary-btn,
+.secondary-btn,
+.ghost-btn,
+.danger-btn {
+    padding: 11px 16px;
+    font-weight: 600;
+}
+
+.primary-btn {
+    background: var(--accent);
+    color: #fff;
+}
+
+.secondary-btn {
+    background: var(--panel-strong);
+    color: var(--text);
+}
+
+.ghost-btn {
+    background: transparent;
+    color: var(--text);
+}
+
+.danger-btn {
+    background: rgba(180, 67, 50, 0.1);
+    color: var(--danger);
+    border-color: rgba(180, 67, 50, 0.18);
+}
+
+.status-chip,
+.pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 12px;
+    font-size: 0.88rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+}
+
+.filters {
+    margin-bottom: 18px;
+}
+
+.filters input {
+    min-width: min(100%, 220px);
+}
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.event-card {
+    display: grid;
+    min-height: 100%;
+    border: 1px solid var(--border);
+    background: rgba(255, 252, 247, 0.9);
+    overflow: hidden;
+}
+
+.event-image {
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    background: #ddd3c7;
+}
+
+.event-content {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+}
+
+.event-top,
+.event-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.event-title {
+    margin: 0;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 1.15rem;
+}
+
+.event-description,
+.event-meta,
+#sessionMeta,
+.booking-meta,
+.admin-meta {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+}
+
+.event-meta {
+    display: grid;
+    gap: 6px;
+    font-size: 0.95rem;
+}
+
+.event-price {
+    font-size: 1.1rem;
+}
+
+.otp-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.stack-list {
+    display: grid;
+    gap: 12px;
+}
+
+.empty-state {
+    color: var(--muted);
+}
+
+.list-item {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+}
+
+.booking-item,
+.admin-item {
+    background: rgba(255, 250, 244, 0.92);
+}
+
+.event-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.event-form textarea,
+.event-form .form-actions {
+    grid-column: 1 / -1;
+}
+
+.admin-panel {
+    display: none;
+}
+
+.toast {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    max-width: min(420px, calc(100% - 32px));
+    padding: 14px 16px;
+    border: 1px solid rgba(10, 123, 120, 0.18);
+    background: rgba(18, 35, 34, 0.94);
+    color: #fff;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.toast.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (max-width: 960px) {
+    .hero,
+    .auth-grid,
+    .event-form {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .app-shell {
+        width: min(100% - 20px, 1220px);
+        padding-top: 12px;
+    }
+
+    .hero,
+    .panel {
+        padding: 18px;
+    }
+
+    .session-card,
+    .list-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

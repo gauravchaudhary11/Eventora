@@ -1,0 +1,18 @@
+{
+  "folders": [
+    {
+      "path": "./client"
+    },
+    {
+      "path": "./server"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/.git": true,
+      "**/dist": true
+    },
+    "explorer.autoReveal": true
+  }
+}

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eventora</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div class="app-shell">
+        <header class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">Event booking workspace</p>
+                <h1>Eventora</h1>
+                <p class="hero-text">Browse live events, verify accounts with OTP, book seats, and manage the catalog from one frontend matched to your backend.</p>
+                <div class="hero-actions">
+                    <button class="primary-btn" data-action="jump-events">Explore events</button>
+                    <button class="ghost-btn" data-action="jump-auth">Access account</button>
+                </div>
+            </div>
+            <div class="hero-panel">
+                <div class="mini-stat">
+                    <span>Public API</span>
+                    <strong>/api/events</strong>
+                </div>
+                <div class="mini-stat">
+                    <span>Protected flow</span>
+                    <strong>JWT + OTP booking</strong>
+                </div>
+                <div class="mini-stat">
+                    <span>Admin tools</span>
+                    <strong>Create, edit, remove</strong>
+                </div>
+            </div>
+        </header>
+
+        <main class="layout">
+            <section class="panel controls-panel" id="auth-anchor">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Connection</p>
+                        <h2>Frontend settings</h2>
+                    </div>
+                    <div class="status-chip" id="auth-status">Guest</div>
+                </div>
+
+                <div class="api-config">
+                    <label for="apiBase">API base URL</label>
+                    <div class="api-row">
+                        <input id="apiBase" type="text" placeholder="http://localhost:5000/api">
+                        <button class="secondary-btn" id="saveApiBase">Save</button>
+                    </div>
+                </div>
+
+                <div class="auth-grid">
+                    <form class="auth-card" id="loginForm">
+                        <h3>Sign in</h3>
+                        <input name="email" type="email" placeholder="Email" required>
+                        <input name="password" type="password" placeholder="Password" required>
+                        <button class="primary-btn" type="submit">Login</button>
+                    </form>
+
+                    <form class="auth-card" id="registerForm">
+                        <h3>Create account</h3>
+                        <input name="name" type="text" placeholder="Full name" required>
+                        <input name="email" type="email" placeholder="Email" required>
+                        <input name="password" type="password" placeholder="Password" required>
+                        <button class="secondary-btn" type="submit">Register</button>
+                    </form>
+
+                    <form class="auth-card" id="otpForm">
+                        <h3>Verify OTP</h3>
+                        <input name="email" type="email" placeholder="Registered email" required>
+                        <input name="otp" type="text" placeholder="6-digit OTP" required>
+                        <button class="secondary-btn" type="submit">Verify</button>
+                    </form>
+                </div>
+
+                <div class="session-card">
+                    <div>
+                        <p class="eyebrow">Session</p>
+                        <h3 id="sessionName">No active user</h3>
+                        <p id="sessionMeta">Sign in to unlock bookings and admin tools.</p>
+                    </div>
+                    <button class="ghost-btn" id="logoutBtn">Logout</button>
+                </div>
+            </section>
+
+            <section class="panel" id="events-anchor">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Events</p>
+                        <h2>Browse and book</h2>
+                    </div>
+                    <button class="secondary-btn" id="refreshEvents">Refresh</button>
+                </div>
+
+                <div class="filters">
+                    <input id="filterCategory" type="text" placeholder="Filter by category">
+                    <input id="filterLocation" type="text" placeholder="Filter by location">
+                    <button class="ghost-btn" id="applyFilters">Apply</button>
+                    <button class="ghost-btn" id="clearFilters">Clear</button>
+                </div>
+
+                <div id="eventsGrid" class="events-grid"></div>
+            </section>
+
+            <section class="panel">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Bookings</p>
+                        <h2>My bookings</h2>
+                    </div>
+                    <button class="secondary-btn" id="refreshBookings">Refresh</button>
+                </div>
+                <div id="bookingsList" class="stack-list empty-state">Log in to view your bookings.</div>
+            </section>
+
+            <section class="panel admin-panel" id="adminPanel">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Admin</p>
+                        <h2>Manage events</h2>
+                    </div>
+                    <div class="status-chip">Admins only</div>
+                </div>
+
+                <form id="eventForm" class="event-form">
+                    <input type="hidden" name="eventId">
+                    <input name="title" type="text" placeholder="Title" required>
+                    <textarea name="description" placeholder="Description" required></textarea>
+                    <input name="date" type="date" required>
+                    <input name="time" type="text" placeholder="Time, e.g. 7:30 PM" required>
+                    <input name="location" type="text" placeholder="Location" required>
+                    <input name="category" type="text" placeholder="Category" required>
+                    <input name="totalSeats" type="number" min="1" placeholder="Total seats" required>
+                    <input name="availableSeats" type="number" min="0" placeholder="Available seats">
+                    <input name="price" type="number" min="0" step="0.01" placeholder="Price" required>
+                    <input name="imageUrl" type="url" placeholder="Image URL" required>
+                    <div class="form-actions">
+                        <button class="primary-btn" type="submit">Save event</button>
+                        <button class="ghost-btn" type="button" id="resetEventForm">Reset</button>
+                    </div>
+                </form>
+
+                <div id="adminEventsList" class="stack-list empty-state">Log in as an admin to manage events.</div>
+            </section>
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <template id="eventCardTemplate">
+        <article class="event-card">
+            <img class="event-image" alt="">
+            <div class="event-content">
+                <div class="event-top">
+                    <span class="pill category-pill"></span>
+                    <span class="pill seats-pill"></span>
+                </div>
+                <h3 class="event-title"></h3>
+                <p class="event-description"></p>
+                <div class="event-meta"></div>
+                <div class="event-bottom">
+                    <strong class="event-price"></strong>
+                    <div class="event-actions">
+                        <button class="ghost-btn send-otp-btn">Send OTP</button>
+                        <button class="primary-btn book-btn">Book</button>
+                    </div>
+                </div>
+                <div class="otp-row">
+                    <input class="otp-input" type="text" placeholder="Enter OTP to book">
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <template id="bookingItemTemplate">
+        <article class="list-item booking-item">
+            <div>
+                <h3 class="booking-title"></h3>
+                <p class="booking-meta"></p>
+            </div>
+            <div class="booking-actions">
+                <span class="pill booking-status"></span>
+                <button class="ghost-btn cancel-booking-btn">Cancel</button>
+            </div>
+        </article>
+    </template>
+
+    <template id="adminEventItemTemplate">
+        <article class="list-item admin-item">
+            <div>
+                <h3 class="admin-title"></h3>
+                <p class="admin-meta"></p>
+            </div>
+            <div class="admin-actions">
+                <button class="ghost-btn edit-event-btn">Edit</button>
+                <button class="danger-btn delete-event-btn">Delete</button>
+            </div>
+        </article>
+    </template>
+
+    <script src="./app.js"></script>
+</body>
+</html>
