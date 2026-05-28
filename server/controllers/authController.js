@@ -15,6 +15,16 @@ const isUnsafeAdminSecret = (secret) => {
 
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+const sendOtpEmailSafely = async (email, otp, type) => {
+    try {
+        await sendOtpEmail(email, otp, type);
+        return true;
+    } catch (err) {
+        console.error(`OTP email delivery failed for ${type} (${email}):`, err);
+        return false;
+    }
+};
+
 
 // Register user
 exports.registerUser = async (req, res) => {
@@ -50,8 +60,13 @@ exports.registerUser = async (req, res) => {
                     action: 'account_verification'
                 });
 
-                await sendOtpEmail(email, otp, 'account_verification');
-                return res.json({ message: 'OTP resent for verification' });
+                const emailSent = await sendOtpEmailSafely(email, otp, 'account_verification');
+                return res.json({
+                    message: emailSent
+                        ? 'OTP resent for verification'
+                        : 'OTP generated, but email delivery failed. Please check mail settings.',
+                    emailSent
+                });
             }
 
             return res.status(400).json({ message: 'User already exists' });
@@ -67,8 +82,13 @@ exports.registerUser = async (req, res) => {
             action: 'account_verification'
         });
 
-        await sendOtpEmail(email, otp, 'account_verification');
-        res.status(201).json({ message: 'User registered, please verify OTP' });
+        const emailSent = await sendOtpEmailSafely(email, otp, 'account_verification');
+        res.status(201).json({
+            message: emailSent
+                ? 'User registered, please verify OTP'
+                : 'User registered, but OTP email delivery failed. Please check mail settings.',
+            emailSent
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -104,9 +124,10 @@ exports.loginUser=async(req,res)=>{
             const otp=generateOtp();
             await Otp.deleteMany({email,action:'account_verification'}); // delete old OTPs
             await Otp.create({email,otp,action:'account_verification'});
-            await sendOtpEmail(email,otp,'account_verification');
+            const emailSent = await sendOtpEmailSafely(email, otp, 'account_verification');
             return res.status(400).json({
-                message:'Please verify your email before logging in'
+                message:'Please verify your email before logging in',
+                emailSent
             });
         }
         res.json({
@@ -212,10 +233,13 @@ exports.forgotPassword = async (req, res) => {
             action: 'password_reset'
         });
 
-        await sendOtpEmail(normalizedEmail, otp, 'password_reset');
+        const emailSent = await sendOtpEmailSafely(normalizedEmail, otp, 'password_reset');
 
         res.json({
-            message: 'Password reset OTP sent to your email'
+            message: emailSent
+                ? 'Password reset OTP sent to your email'
+                : 'Password reset OTP generated, but email delivery failed. Please check mail settings.',
+            emailSent
         });
     } catch (err) {
         console.error(err);
