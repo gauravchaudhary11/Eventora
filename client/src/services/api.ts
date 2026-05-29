@@ -7,12 +7,16 @@ type ViteImportMeta = ImportMeta & {
 };
 
 // API base URL — can be overridden via VITE_API_BASE_URL
-const API_BASE_URL =
+const rawApiBaseUrl =
   (typeof import.meta !== "undefined" && (import.meta as ViteImportMeta).env?.VITE_API_BASE_URL) ||
   (typeof window !== "undefined" && window.location.hostname.endsWith("vercel.app")
     ? "https://eventora-44wb.onrender.com/api"
     : undefined) ||
   "http://localhost:5000/api";
+
+const API_BASE_URL = rawApiBaseUrl.replace(/\/+$/, "").endsWith("/api")
+  ? rawApiBaseUrl.replace(/\/+$/, "")
+  : `${rawApiBaseUrl.replace(/\/+$/, "")}/api`;
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
