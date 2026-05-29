@@ -45,8 +45,11 @@ function EventDetailsPage() {
     }
     setSendingOtp(true);
     try {
-      await bookingsApi.sendOtp();
-      toast.success("OTP sent to your email.");
+      const response = await bookingsApi.sendOtp();
+      if (response.otp) {
+        setOtp(response.otp);
+      }
+      toast.success(response.message || "OTP sent to your email.");
     } catch (e: unknown) {
       toast.error(getErrorMessage(e, "Couldn't send OTP"));
     } finally {

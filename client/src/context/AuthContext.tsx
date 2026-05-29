@@ -19,7 +19,7 @@ interface AuthContextValue {
     email: string,
     password: string,
     options?: { asAdmin?: boolean; adminSecret?: string },
-  ) => Promise<{ message: string }>;
+  ) => Promise<{ message: string; emailSent?: boolean; verified?: boolean }>;
   verifyOtp: (email: string, otp: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<{ message: string }>;
   resetPassword: (email: string, otp: string, password: string) => Promise<{ message: string }>;

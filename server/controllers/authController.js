@@ -74,13 +74,18 @@ exports.registerUser = async (req, res) => {
                     action: 'account_verification'
                 });
 
-                const emailSent = await sendOtpEmailSafely(normalizedEmail, otp, 'account_verification');
-                return res.json({
-                    message: emailSent
-                        ? 'OTP resent for verification'
-                        : 'OTP generated, but email delivery failed. Please check mail settings.',
-                    emailSent
-                });
+        const emailSent = await sendOtpEmailSafely(normalizedEmail, otp, 'account_verification');
+        if (!emailSent) {
+            user.isVerified = true;
+            await user.save();
+        }
+        return res.json({
+            message: emailSent
+                ? 'OTP resent for verification'
+                : 'OTP generated, but email delivery failed. Account activated so you can continue.',
+            emailSent,
+            verified: !emailSent
+        });
             }
 
             return res.status(400).json({ message: 'User already exists' });
@@ -97,11 +102,16 @@ exports.registerUser = async (req, res) => {
         });
 
         const emailSent = await sendOtpEmailSafely(normalizedEmail, otp, 'account_verification');
+        if (!emailSent) {
+            user.isVerified = true;
+            await user.save();
+        }
         res.status(201).json({
             message: emailSent
                 ? 'User registered, please verify OTP'
-                : 'User registered, but OTP email delivery failed. Please check mail settings.',
-            emailSent
+                : 'User registered, but OTP email delivery failed. Account activated so you can continue.',
+            emailSent,
+            verified: !emailSent
         });
     } catch (err) {
         if (err?.code === 11000) {
@@ -145,6 +155,22 @@ exports.loginUser=async(req,res)=>{
             await Otp.deleteMany({email: normalizedEmail,action:'account_verification'}); // delete old OTPs
             await Otp.create({email: normalizedEmail,otp,action:'account_verification'});
             const emailSent = await sendOtpEmailSafely(normalizedEmail, otp, 'account_verification');
+            if (!emailSent) {
+                user.isVerified = true;
+                await user.save();
+            }
+            if (!emailSent) {
+                return res.json({
+                    message: 'Login successful (account auto-activated because verification email could not be sent)',
+                    _id:user._id,
+                    name:user.name,
+                    email:user.email,
+                    role:user.role,
+                    token:generateToken(user._id,user.role),
+                    emailSent,
+                    verified: true
+                });
+            }
             return res.status(400).json({
                 message:'Please verify your email before logging in',
                 emailSent

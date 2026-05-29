@@ -165,7 +165,8 @@ export type BookingPaymentStatus = "non-paid" | "paid";
 export type BookingPaymentMethod = "upi" | "card" | "wallet" | "cash" | "none";
 
 export const bookingsApi = {
-  sendOtp: () => api.post("/bookings/send-otp", {}).then((r) => r.data),
+  sendOtp: () =>
+    api.post<{ message: string; emailSent?: boolean; otp?: string }>("/bookings/send-otp", {}).then((r) => r.data),
   create: (eventId: string, otp: string) =>
     api.post("/bookings", { eventId, otp }).then((r) => r.data),
   listAll: () => api.get<Booking[]>("/bookings").then((r) => r.data),

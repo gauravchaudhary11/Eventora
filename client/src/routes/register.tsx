@@ -65,7 +65,11 @@ function RegisterPage() {
         asAdmin,
         adminSecret: asAdmin ? adminSecret.trim() : undefined,
       });
-      setPendingEmail(form.email);
+      if (res?.emailSent !== false) {
+        setPendingEmail(form.email);
+      } else {
+        setPendingEmail("");
+      }
       toast.success(res?.message || "Account created. Check your email for the OTP.");
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Registration failed"));

@@ -8,6 +8,23 @@ const generateOtp=()=>{
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+const sendBookingOtpSafely = async (email, otp) => {
+    try {
+        const delivered = await Promise.race([
+            sendOtpEmail(email, otp, 'event_booking').then(() => true).catch((err) => {
+                console.error(`Booking OTP delivery failed (${email}):`, err);
+                return false;
+            }),
+            new Promise((resolve) => setTimeout(() => resolve(false), 3500))
+        ]);
+
+        return Boolean(delivered);
+    } catch (err) {
+        console.error(`Booking OTP delivery failed (${email}):`, err);
+        return false;
+    }
+};
+
 const getConfirmedBookingCount = async (eventId) => Booking.countDocuments({
     eventId,
     status: 'confirmed'
@@ -31,8 +48,14 @@ exports.sendBookingOtp = async (req, res) => {
     });
 
     await Otp.create({ email: req.user.email, otp, action: 'event_booking' });
-    await sendOtpEmail(req.user.email, otp, 'event_booking');
-    res.json({ message: 'OTP sent to email' });
+    const emailSent = await sendBookingOtpSafely(req.user.email, otp);
+    res.json({
+        message: emailSent
+            ? 'OTP sent to email'
+            : 'OTP generated, but email delivery failed. Using fallback code in the app.',
+        emailSent,
+        otp: emailSent ? undefined : otp
+    });
 };
 
 
