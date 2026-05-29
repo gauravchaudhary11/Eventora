@@ -4,6 +4,9 @@ dotenv.config();
 
 const transporter=nodeMailer.createTransport({
     service:'gmail',
+    connectionTimeout: 4000,
+    greetingTimeout: 4000,
+    socketTimeout: 4000,
     auth:{
         user:process.env.EMAIL_USER,
         pass:process.env.EMAIL_PASS

@@ -19,8 +19,19 @@ const normalizeEmail = (email) => email.trim().toLowerCase();
 
 const sendOtpEmailSafely = async (email, otp, type) => {
     try {
-        await sendOtpEmail(email, otp, type);
-        return true;
+        const delivered = await Promise.race([
+            sendOtpEmail(email, otp, type).then(() => true).catch((err) => {
+                console.error(`OTP email delivery failed for ${type} (${email}):`, err);
+                return false;
+            }),
+            new Promise((resolve) => setTimeout(() => resolve(false), 3500))
+        ]);
+
+        if (!delivered) {
+            console.warn(`OTP email for ${type} (${email}) was not confirmed within timeout.`);
+        }
+
+        return Boolean(delivered);
     } catch (err) {
         console.error(`OTP email delivery failed for ${type} (${email}):`, err);
         return false;
