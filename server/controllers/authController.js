@@ -15,6 +15,8 @@ const isUnsafeAdminSecret = (secret) => {
 
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+const normalizeEmail = (email) => email.trim().toLowerCase();
+
 const sendOtpEmailSafely = async (email, otp, type) => {
     try {
         await sendOtpEmail(email, otp, type);
@@ -31,6 +33,7 @@ exports.registerUser = async (req, res) => {
     const { name, email, password, role, adminSecret } = req.body;
 
     try {
+        const normalizedEmail = normalizeEmail(email);
         const wantsAdminRole = role === 'admin' || Boolean(adminSecret);
         if (wantsAdminRole) {
             if (isUnsafeAdminSecret(process.env.ADMIN_SIGNUP_SECRET)) {
@@ -43,7 +46,7 @@ exports.registerUser = async (req, res) => {
         }
 
         const targetRole = wantsAdminRole ? 'admin' : 'user';
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email: normalizedEmail });
 
         if (user) {
             if (!user.isVerified) {
@@ -55,12 +58,12 @@ exports.registerUser = async (req, res) => {
                 const otp = generateOtp();
 
                 await Otp.create({
-                    email,
+                    email: normalizedEmail,
                     otp,
                     action: 'account_verification'
                 });
 
-                const emailSent = await sendOtpEmailSafely(email, otp, 'account_verification');
+                const emailSent = await sendOtpEmailSafely(normalizedEmail, otp, 'account_verification');
                 return res.json({
                     message: emailSent
                         ? 'OTP resent for verification'
@@ -72,17 +75,17 @@ exports.registerUser = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        user = await User.create({ name, email, password, role: targetRole });
+        user = await User.create({ name, email: normalizedEmail, password, role: targetRole });
 
         const otp = generateOtp();
 
         await Otp.create({
-            email,
+            email: normalizedEmail,
             otp,
             action: 'account_verification'
         });
 
-        const emailSent = await sendOtpEmailSafely(email, otp, 'account_verification');
+        const emailSent = await sendOtpEmailSafely(normalizedEmail, otp, 'account_verification');
         res.status(201).json({
             message: emailSent
                 ? 'User registered, please verify OTP'
@@ -90,8 +93,13 @@ exports.registerUser = async (req, res) => {
             emailSent
         });
     } catch (err) {
+        if (err?.code === 11000) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
         console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({
+            message: err?.message || 'Server error'
+        });
     }
 };
 //login User
@@ -100,8 +108,9 @@ exports.registerUser = async (req, res) => {
 exports.loginUser=async(req,res)=>{
     const {email,password}=req.body;
     try{
+        const normalizedEmail = normalizeEmail(email);
         // Check if user exists
-        const user=await User.findOne({email});
+        const user=await User.findOne({email:normalizedEmail});
         if(!user){
 
             return res.status(400).json({message:'Invalid credentials,please Sign up'});
@@ -122,9 +131,9 @@ exports.loginUser=async(req,res)=>{
         }
         if(!user.isVerified && user.role!=='admin'){
             const otp=generateOtp();
-            await Otp.deleteMany({email,action:'account_verification'}); // delete old OTPs
-            await Otp.create({email,otp,action:'account_verification'});
-            const emailSent = await sendOtpEmailSafely(email, otp, 'account_verification');
+            await Otp.deleteMany({email: normalizedEmail,action:'account_verification'}); // delete old OTPs
+            await Otp.create({email: normalizedEmail,otp,action:'account_verification'});
+            const emailSent = await sendOtpEmailSafely(normalizedEmail, otp, 'account_verification');
             return res.status(400).json({
                 message:'Please verify your email before logging in',
                 emailSent
@@ -142,8 +151,11 @@ exports.loginUser=async(req,res)=>{
         
     }
     catch(err){
+        if (err?.code === 11000) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
         console.error(err);
-        res.status(500).json({message:'Server error'});
+        res.status(500).json({message: err?.message || 'Server error'});
     }
 };
 
@@ -152,6 +164,7 @@ exports.loginUser=async(req,res)=>{
 exports.verifyOtp = async (req, res) => {
     try {
         const { email, otp } = req.body;
+        const normalizedEmail = normalizeEmail(email);
 
         // ✅ 1. Validate input
         if (!email || !otp) {
@@ -160,7 +173,7 @@ exports.verifyOtp = async (req, res) => {
 
         // ✅ 2. Get latest OTP
         const otpRecord = await Otp.findOne({
-            email: email.trim(),
+            email: normalizedEmail,
             action: 'account_verification'
         }).sort({ createdAt: -1 });
 
@@ -176,18 +189,18 @@ exports.verifyOtp = async (req, res) => {
 
         // ✅ 3. Mark user verified
         await User.findOneAndUpdate(
-            { email: email.trim() },
+            { email: normalizedEmail },
             { isVerified: true }
         );
 
         // ✅ 4. Delete all OTPs for security
         await Otp.deleteMany({
-            email: email.trim(),
+            email: normalizedEmail,
             action: 'account_verification'
         });
 
         // ✅ 5. Get updated user
-        const user = await User.findOne({ email: email.trim() });
+        const user = await User.findOne({ email: normalizedEmail });
 
         // ✅ 6. Send response with token
         res.json({
@@ -208,12 +221,12 @@ exports.verifyOtp = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
+        const normalizedEmail = normalizeEmail(email);
 
         if (!email) {
             return res.status(400).json({ message: 'Email is required' });
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
         const user = await User.findOne({ email: normalizedEmail });
 
         if (!user) {
@@ -250,6 +263,7 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
     try {
         const { email, otp, password } = req.body;
+        const normalizedEmail = normalizeEmail(email);
 
         if (!email || !otp || !password) {
             return res.status(400).json({ message: 'Email, OTP and new password are required' });
@@ -259,7 +273,6 @@ exports.resetPassword = async (req, res) => {
             return res.status(400).json({ message: 'Password must be at least 6 characters' });
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
         const otpRecord = await Otp.findOne({
             email: normalizedEmail,
             action: 'password_reset'
